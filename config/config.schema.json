@@ -1,0 +1,39 @@
+
+{
+  "type":"object",
+  "properties":{
+    "runtime":{"type":"object","properties":{
+      "engine":{"enum":["ollama"]},
+      "model":{"type":"string","default":"qwen2.5:7b-instruct"},
+      "quant":{"type":"string","default":"q4_K_M"},
+      "context_tokens":{"type":"integer","minimum":2048,"maximum":8192,"default":8192},
+      "gpu_offload_layers":{"type":"integer","default":20},
+      "ollama_url":{"type":"string","default":"http://127.0.0.1:11434"}
+    },"required":["engine","model"]},
+    "languages":{"type":"object","properties":{
+      "stt":{"type":"string","default":"en"},
+      "tts":{"type":"string","default":"en"},
+      "ocr":{"type":"string","default":"eng+fas"}
+    }},
+    "safety":{"type":"object","properties":{
+      "terminal_mode":{"enum":["allowlist","advanced"],"default":"allowlist"},
+      "require_confirm_destructive":{"type":"boolean","default":true},
+      "screen_capture_hotkey":{"type":"string","default":"Ctrl+Alt+S"},
+      "ptt_hotkey":{"type":"string","default":"Ctrl+Space"}
+    },"required":["terminal_mode","require_confirm_destructive"]},
+    "sandboxes":{"type":"array","items":{"type":"string"}},
+    "rag":{"type":"object","properties":{
+      "embed_model":{"type":"string","default":"BAAI/bge-small-en-v1.5"},
+      "chunk_size":{"type":"integer","default":700},
+      "chunk_overlap":{"type":"integer","default":100},
+      "top_k":{"type":"integer","default":6},
+      "use_bm25":{"type":"boolean","default":false},
+      "use_rerank":{"type":"boolean","default":false},
+      "index_dir":{"type":"string","default":"C:\\\\Agent\\\\models\\\\rag"}
+    }},
+    "logging":{"type":"object","properties":{
+      "level":{"enum":["DEBUG","INFO","WARN","ERROR"],"default":"INFO"}
+    }}
+  },
+  "required":["runtime","safety","sandboxes"]
+}

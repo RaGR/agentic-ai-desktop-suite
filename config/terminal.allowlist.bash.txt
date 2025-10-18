@@ -1,0 +1,8 @@
+ls
+cat
+pwd
+whoami
+git status
+python3 --version
+pip3 list
+uname -a

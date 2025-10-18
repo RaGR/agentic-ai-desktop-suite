@@ -1,0 +1,9 @@
+Get-ChildItem
+Get-Content
+type
+dir
+whoami
+git status
+pip list
+python --version
+where
