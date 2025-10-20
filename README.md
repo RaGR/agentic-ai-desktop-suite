@@ -1,259 +1,285 @@
-# Local Agentic AI — Windows 11 + WSL2 (Phase-1 MVP)
+# 🧠 Local Agentic AI OS — The Offline AI Brain for Your Machine
 
-Offline-first, local, multimodal **agent** with a **central LLM brain**. Push-to-talk voice → summarize a local file from sandbox with inline citations → speak the result. Includes read-only FS tools, allowlisted terminal, screen capture + OCR, minimal FAISS RAG, and JSON audit logs.
-
-> **Assumptions**
-> - OS: Windows 11, PowerShell 7; optional WSL2 Ubuntu 24.04 worker.
-> - Python 3.11; NVIDIA GTX 960 (~4 GB VRAM) available but not required.
-> - Offline after initial model/voice downloads.
+A **local-first, multimodal, agentic AI operating layer** for **Windows 11 + WSL2**.  
+It turns your personal computer into an **autonomous, privacy-preserving assistant** that can *see, hear, read, reason, and act* on your system — **without any cloud dependency**.
 
 ---
 
-## ✨ Features (Phase-1)
+## 🌌 The Vision
 
-- **LLM runtime**: Ollama + `qwen2.5:7b-instruct` (quant **Q4_K_M**, ctx ≤ 8k).
-- **Voice in/out**: faster-whisper (tiny/base int8), Piper TTS (local).  
-- **Vision/OCR**: Screen capture (mss) → Tesseract (`eng+fas`).
-- **RAG-lite**: FAISS + Sentence-Transformers (`bge-small-en-v1.5`), citations as `path#line`.
-- **Tooling**: Read-only FS (`read_text|list_dir|stat`), allowlist shell (PowerShell + Bash).
-- **Safety**: Sandboxed paths, allowlisted commands, hotkey-gated capture/PTT, comprehensive audit logs.
-- **Observability**: Structured JSONL logs, per-tool audit entries with payload hash.
+> “Your computer should be intelligent — not dependent.”
 
----
+This project is built around a simple idea:  
+**What if your computer could reason and operate like a personal AI OS — all offline?**
 
-## 🧰 System Requirements
+Modern AI assistants rely on cloud APIs that stream your data to third-party servers.  
+**Local Agentic AI OS** breaks that model — hosting the entire intelligence stack locally, giving you:
 
-- CPU: Intel i7-6700HQ or better  
-- GPU: GTX 960 (~4 GB VRAM) **recommended** for LLM offload (CPU fallback works)  
-- RAM: 12 GB  
-- Disk: 500 GB SSD  
-- Software: Windows 11, PowerShell 7, Python 3.11, Chocolatey (for Tesseract), winget (for Ollama)
+- 🔒 **Privacy** — nothing leaves your system.  
+- ⚡ **Performance** — no latency, full GPU acceleration.  
+- 🧩 **Extensibility** — plug in tools, agents, and workflows like system modules.  
+- 🧠 **Continuity** — one persistent “brain” coordinating your data, files, and commands.
+
+Think of it as your **local GPT-based kernel**:  
+a unified AI layer that orchestrates speech, vision, file operations, and reasoning across your OS.
 
 ---
 
-## 📦 Repository Layout
+## 🧩 Core Concept
+
+The system is designed around a **central LLM brain** (the planner), which interprets natural language commands and delegates them to **safe, audited tools**.  
+Every interaction passes through **policy gates**, ensuring full control and traceability.
+
+### 🧠 Central Brain
+- **Model:** `qwen2.5:7b-instruct` (via **Ollama**)
+- **Context window:** 8 K tokens (configurable)
+- **Quantization:** Q4_K_M for GTX 960-class GPUs
+- **Role:** Plan tasks, parse intents, invoke tools (FS, RAG, OCR, etc.)
+
+### ⚙️ Tooling Layer
+- **Filesystem:** read-only exploration and summarization
+- **Terminal:** allowlisted PS/Bash commands
+- **RAG:** FAISS + BGE embeddings for local document retrieval
+- **Vision:** screen capture + Tesseract OCR
+- **Audio:** faster-whisper STT + Piper TTS
+
+### 🔒 Safety Layer
+- Path-scoped sandboxes  
+- Command allowlists  
+- Explicit hotkeys (no background listening)  
+- JSON audit logs for every action  
+
+---
+
+## 🧬 Architecture Overview
 
 ```
 
-C:\Agent
-bin\                 # operator scripts (start/stop/reindex, hotkeys)
-config\              # config schema, example, allowlists
-models\              # local models/voices/cache (you place voices here)
-logs\                # runtime logs + generated audio/screens
-audit\               # immutable per-tool audit logs (JSONL by date)
-ingest\              # drop files here to index (in addition to sandboxes)
-src\                 # Python services, tools, planner, runtime
-tests\               # unit + smoke e2e aids
-docs\                # install docs (Windows/WSL)
-venv\                # created by setup script
++--------------------+       +---------------------------+
+|   User Interface   | <---->|   Hotkeys / Tray / CLI    |
+| (PTT, Capture, UI) |       |  (Ctrl+Space / Ctrl+Alt+S)|
++---------+----------+       +-------------+-------------+
+|
+v
++----------------------+      +-----------------------------+
+|     Orchestrator     | <--> |   Policy & Safety Engine    |
+|  (Planner, Tool Calls)|     |  (Allowlist, Sandboxes)     |
++----------+-----------+      +--------------+--------------+
+|                                          |
+v                                          v
++----------+-----------+              +---------------+--------------+
+|        Tools         |              |         Logging/Audit        |
+| FS | RAG | Shell | STT|             | JSONL logs, per-tool audits  |
+| TTS| OCR | Screen    |              | (immutability, payload hash) |
++----------+-----------+              +---------------+--------------+
+|
+v
++----------+-------------------------------------------+
+|       LLM Brain  (Ollama + Qwen 7B Q4)              |
+|  Chat planner / summarizer / reasoning engine        |
++------------------------------------------------------+
 
-```
+````
 
 ---
 
-## 🚀 Quickstart (10 Steps)
+## ⚙️ Features
 
-1. **Create folders**
+| Domain | Capability | Local Backend |
+|---------|-------------|---------------|
+| **Language** | LLM planner (reasoning, summarizing, coding) | Ollama + Qwen2.5 |
+| **Speech In** | Push-to-talk transcription | faster-whisper (base int8) |
+| **Speech Out** | Offline voice generation | Piper TTS (ONNX) |
+| **Vision** | Screen capture + OCR | MSS + Tesseract (eng+fas) |
+| **Knowledge** | Vector search + citations | FAISS + BGE-small |
+| **System** | File read, safe shell, logs | PowerShell 7 / WSL bash |
+| **Security** | Sandboxes, allowlists, audits | Built-in policies |
+| **Observability** | Structured JSONL logs | `logs/` + `audit/` |
+| **Offline Mode** | Fully functional after downloads | ✅ |
+
+---
+
+## 🚀 Quickstart (Windows 11)
+
+1. **Clone or copy project**
+
    ```powershell
-   mkdir C:\Agent, C:\Agent\{bin,config,models,logs,audit,ingest,src,tests,docs} -Force
-    ```
+   git clone https://github.com/yourname/local-agentic-ai-os-core.git C:\Agent
+   cd C:\Agent
+``
 
-2. **Create venv & install deps**
+2. **Setup Python**
 
    ```powershell
-   py -3.11 -m venv C:\Agent\venv
-   C:\Agent\venv\Scripts\Activate.ps1
+   py -3.11 -m venv venv
+   .\venv\Scripts\Activate.ps1
    pip install -U pip wheel
    pip install fastapi uvicorn pydantic requests mss pillow pytesseract sounddevice soundfile keyboard `
      faster-whisper faiss-cpu sentence-transformers pypdf
    ```
-3. **OCR (Tesseract)**
+
+3. **Install OCR / LLM / TTS runtimes**
 
    ```powershell
    choco install -y tesseract
-   ```
-4. **Ollama + model**
-
-   ```powershell
-   winget install -e --id Ollama.Ollama
+   winget install -e Ollama.Ollama
    ollama pull qwen2.5:7b-instruct
    ```
-5. **Piper voice**
-   Download a Piper voice (e.g., `en_US-amy-medium.onnx`) into:
 
-   ```
-   C:\Agent\models\piper\
-   ```
+   Download Piper voice (e.g. `en_US-amy-medium.onnx`) to `C:\Agent\models\piper\`.
 
-   Optionally set:
+4. **Configure**
 
-   ```powershell
-   $env:PIPER_VOICE="C:\Agent\models\piper\en_US-amy-medium.onnx"
-   ```
-6. **Configs & allowlists**
+   Edit `config\config.example.json` → set your `sandboxes` (e.g. `C:\Users\<YOU>\Projects`).
+   Copy it as `config.json`.
 
-   * Edit `config\config.example.json` with your sandbox paths.
-   * Copy to `config.json` and export:
-
-     ```powershell
-     Copy-Item C:\Agent\config\config.example.json C:\Agent\config\config.json
-     $env:AGENT_CONFIG="C:\Agent\config\config.json"
-     ```
-7. **Index some content**
-
-   * Put files in `C:\Agent\ingest` and/or your sandboxes.
-   * Build the index:
-
-     ```powershell
-     python C:\Agent\bin\reindex.py
-     ```
-8. **Start services**
+5. **Re-index knowledge**
 
    ```powershell
-   pwsh -File C:\Agent\bin\agent.ps1 start
+   python bin\reindex.py
    ```
-9. **Use hotkeys**
 
-   * **PTT** `Ctrl+Space`: speak a request.
-   * **Screen** `Ctrl+Alt+S`: capture → OCR dump to console.
-10. **Demo the MVP**
-    Say:
+6. **Start agent**
 
-    > “Summarize the key tasks from ‘C:\Users<YOU>\Projects\todo.md’ and cite the file.”
+   ```powershell
+   pwsh -File bin\agent.ps1 start
+   ```
 
-    Expect spoken bullets + audit entries in `C:\Agent\audit\YYYY-MM-DD.jsonl`.
+7. **Use hotkeys**
 
----
+   * `Ctrl + Space` → speak a command
+   * `Ctrl + Alt + S` → screen capture → OCR
 
-## ⚙️ Configuration
+   Example:
 
-* **Schema**: `config/config.schema.json`
-* **Example**: `config/config.example.json`
-
-Key fields:
-
-* `runtime.engine`: `"ollama"`
-* `runtime.model`: `"qwen2.5:7b-instruct"`
-* `runtime.quant`: `"q4_K_M"`
-* `runtime.context_tokens`: `8192`
-* `languages`: `{ stt: "en", tts: "en", ocr: "eng+fas" }`
-* `safety`: `{ terminal_mode: "allowlist", require_confirm_destructive: true, screen_capture_hotkey, ptt_hotkey }`
-* `sandboxes`: array of absolute paths (read-only in Phase-1)
-* `rag`: `{ embed_model, chunk_size, chunk_overlap, top_k, index_dir }`
+   > “Summarize the key tasks from `C:\Users\<YOU>\Projects\todo.md` and cite the file.”
 
 ---
 
-## ⌨️ Hotkeys
+## 🔊 Typical Flow
 
-* **Push-to-talk**: `Ctrl+Space`
-* **Screen capture**: `Ctrl+Alt+S` (full screen → `logs\screen.png` → OCR)
-
-Change hotkeys in `config.json` and restart the agent.
-
----
-
-## 🔌 API (Local)
-
-Base: `http://127.0.0.1:8088`
-
-* `POST /chat` — `{ "text": "..." }` → planner routes tools, returns `{ ok, text }`.
-* `POST /tools/fs` — `{ op, path }` where `op ∈ {read_text,list_dir,stat}`.
-* `POST /tools/shell` — `{ shell, cmd, cwd? }` with allowlist enforcement.
-* `POST /tools/rag/query` — `{ q, top_k? }` → FAISS hits with `path#line`.
-* `POST /tools/screen/capture` — `{ mode, region? }` → `{ image_path }`.
-* `POST /tools/ocr` — `{ image_path, lang?, psm? }` → `{ text }`.
-* `POST /tools/stt` — `{ audio_path?, size?, language? }` → `{ text }`.
-* `POST /tools/tts` — `{ text }` → writes `logs\out.wav` (or SAPI speaks if no Piper).
-
-Every endpoint creates an **audit record**: `C:\Agent\audit\YYYY-MM-DD.jsonl`.
+1. **Voice Input** → recorded by push-to-talk.
+2. **STT** → transcribed text passed to planner.
+3. **Planner** → routes intent (“summarize file”) → tool calls.
+4. **Tools** → FS read + RAG query + LLM summary.
+5. **Response** → TTS speaks result.
+6. **Audit** → all actions logged with hashes for traceability.
 
 ---
 
-## 🔐 Security & Safety (Phase-1)
+## 🧱 Design Philosophy
 
-* **Filesystem**: Read-only tools inside configured **sandboxes**. Path normalization; traversal denied.
-* **Terminal**: **Allowlist-only** commands. No destructive ops.
-* **Capture & Voice**: Both gated by **hotkeys** (PTT, Screen).
-* **Network**: Localhost APIs only. No external calls after model/voice pulls.
-* **Audit**: Per-tool JSONL with payload hash, result, timestamps.
+| Principle               | Meaning                                                              |
+| ----------------------- | -------------------------------------------------------------------- |
+| **Local-first**         | Every model and process runs on your hardware.                       |
+| **Agentic**             | The AI can plan and use tools autonomously within safe boundaries.   |
+| **Modular**             | Each capability (STT, OCR, RAG, etc.) is a detachable micro-service. |
+| **Auditable**           | Nothing happens silently — every action is logged.                   |
+| **Security-by-default** | No write ops, destructive commands, or hidden network access.        |
+| **Human-in-loop**       | Push-to-talk and confirmations keep control in the operator’s hands. |
 
 ---
 
-## 🧱 RAG Ingest
+## 🛡️ Security Architecture
 
-* Watch / index locations: `C:\Agent\ingest` and configured sandboxes.
-* Supported: `.txt .md .pdf .log .py .json .cfg .ini` (extend in scripts).
-* Chunking: default `700/100`.
-* Embeddings: `bge-small-en-v1.5` (CPU).
-* Store: FAISS index + `metadata.sqlite` (in `models\rag`).
+* **Sandboxes** — explicitly scoped folders; no access outside.
+* **Terminal allowlists** — only safe commands (e.g. `dir`, `ls`, `git status`).
+* **Policy engine** — denies traversal (`..`), shells with special chars, or advanced mode unless toggled.
+* **Audit system** — per-tool logs with SHA-hashed payloads.
+* **Air-gapped readiness** — network access not required after model pulls.
 
-Rebuild on demand:
+---
+
+## 🧠 Example Use-Cases
+
+| Category             | Example                                                            |
+| -------------------- | ------------------------------------------------------------------ |
+| **Productivity**     | “Summarize today’s meeting notes in Projects folder.”              |
+| **Code assistance**  | “List Python files larger than 5 KB in my project directory.”      |
+| **System awareness** | “Show me what’s inside the logs folder.”                           |
+| **Research**         | “Search my documentation for ‘FAISS’ and quote the relevant line.” |
+| **Accessibility**    | Speak documents aloud, read on-screen text.                        |
+
+---
+
+## 🧩 Configuration Overview
+
+* `runtime` — LLM engine + parameters.
+* `languages` — STT/TTS/OCR language codes.
+* `safety` — terminal mode, confirmation, hotkeys.
+* `sandboxes` — array of permitted directories.
+* `rag` — embedding model, chunk sizes, overlap, index path.
+* `logging` — verbosity level.
+
+---
+
+## 🧪 Testing & Evaluation
+
+Run:
 
 ```powershell
-python C:\Agent\bin\reindex.py
-```
-
----
-
-## 🧪 Testing
-
-* **Unit**: safety checks, allowlist parsers, RAG round-trip, OCR smoke.
-* **E2E (manual)**: Start agent → `Ctrl+Space` → speak the summarize request → expect TTS + citations + audit entries.
-
-Run unit tests (example):
-
-```powershell
-C:\Agent\venv\Scripts\Activate.ps1
 pytest -q
 ```
 
----
+**Metrics**
 
-## 🛠️ Troubleshooting
-
-* **LLM slow / OOM**: Reduce context to 4k; keep `q4_K_M`; let Ollama offload fewer layers; CPU fallback acceptable.
-* **No audio device**: Check `sounddevice` default input/output; set system default; try 16 kHz mono via `bin\hotkeys.py`.
-* **OCR poor**: Increase contrast; use region capture; try `psm=6`. Ensure Tesseract language packs installed.
-* **Allowlist denies**: Edit `config\terminal.allowlist.*.txt`; restart agent.
-* **Sandbox denied**: Verify absolute path is under one of `sandboxes` and no traversal.
-
-Logs: `C:\Agent\logs\agent.jsonl`
-Audits: `C:\Agent\audit\YYYY-MM-DD.jsonl`
+| Component    | Target                   |
+| ------------ | ------------------------ |
+| LLM latency  | < 3 s TTF                |
+| STT accuracy | < 12 % WER (base int8)   |
+| TTS latency  | < 1.5 s per sentence     |
+| OCR accuracy | > 90 % UI text           |
+| RAG hit-rate | > 70 % Top-1 correct doc |
 
 ---
 
-## 📈 Performance Notes
+## ⚙️ Troubleshooting
 
-* Target TTF (first token) < 3 s with 7B Q4 on GTX-960 partial offload.
-* STT `base` int8 is near real-time on CPU; use `tiny` for very low latency.
-* Piper TTS is real-time-ish on CPU for short sentences.
-* Keep RAG `top_k` small (≤6) and chunks ~700 for speed.
+| Issue         | Solution                                       |
+| ------------- | ---------------------------------------------- |
+| GPU OOM       | reduce context to 4 k; lower offload layers    |
+| No audio      | check input/output devices; ensure 16 kHz mono |
+| OCR garbled   | install Tesseract `eng` and `fas`; use `psm=6` |
+| Policy denial | verify allowlist + sandbox paths               |
+| Index stale   | re-run `python bin\reindex.py`                 |
 
----
-
-## 🚫 Known Limitations (Phase-1)
-
-* No FS write/move/delete; read-only operations only.
-* No destructive shell commands; **advanced mode** disabled.
-* Vision-chat (e.g., LLaVA, Moondream) not required for DoD.
-* English-first embeddings; multilingual retrieval is limited.
-
----
-
-## 🗺️ Roadmap → Phase-2/3 (High-Level)
-
-* **Phase-2**: Write ops with typed confirmation, hybrid retrieval (BM25+dense) + reranker, richer planner (LangGraph), metrics/OTel, WSL worker service.
-* **Phase-3**: Chaos/security tests, backups/restore, wake word, advanced terminal mode with PIN, air-gapped packaging.
+Logs → `C:\Agent\logs\agent.jsonl`
+Audits → `C:\Agent\audit\YYYY-MM-DD.jsonl`
 
 ---
 
 ## 📜 License
 
-Apache-2.0
+Licensed under the **Apache License 2.0**
+See the [`LICENSE`](./LICENSE) file for details.
 
 ---
 
-## 👤 Credits
+## 🌍 Roadmap
 
-Built for a Windows 11 + WSL2 local-first environment with strict safety defaults and audited tooling.
+| Phase                | Focus                                                     | Outcome                   |
+| -------------------- | --------------------------------------------------------- | ------------------------- |
+| **1. MVP (Current)** | Voice → File Summary → Speech Out                         | Fully offline core        |
+| **2. Beta**          | Write ops, confirmations, hybrid RAG, reranker, better UI | Interactive desktop agent |
+| **3. Prod**          | Wake-word, security suite, air-gapped bundle              | Private AI OS             |
 
+---
+
+## 🤝 Contributing
+
+Pull requests and feature ideas welcome!
+Focus on:
+
+* Additional tool adapters (web, file ops, Git, API)
+* Vision expansion (LLaVA/Moondream)
+* Performance optimizations and UI front ends.
+
+---
+
+## 🧠 Summary
+
+> **Local Agentic AI OS** is not just another chatbot —
+> it’s an **operating layer of intelligence** that lives entirely on your machine.
+> Voice, vision, reasoning, and command — unified in one offline, audited, private system.
+
+Turn your PC into your **own autonomous AI operator**.
