@@ -1,3 +1,10 @@
+---
+
+![](./banner.png)
+
+---
+
+
 # 🧠 Local Agentic AI OS — The Offline AI Brain for Your Machine
 
 A **local-first, multimodal, agentic AI operating layer** for **Windows 11 + WSL2**.  
